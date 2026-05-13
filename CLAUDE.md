@@ -49,4 +49,4 @@ Each Stage folder must have `README.md` (English) and `README_CN.md` (Chinese):
 | Stage4_Enterprise_Practice | Enterprise | Lesson 07 |
 | Stage5_OpenSpec_Applied | OpenSpec | Lesson 08-09 |
 | Stage6_SpecKit_Applied | Spec-Kit | Lesson 10-11 |
-| Stage7_Superpowers_Applied | Superpowers | Lesson 12 |
+| Stage7_Superpowers_Applied | Superpowers | Lesson 12-13 |

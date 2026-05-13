@@ -17,6 +17,11 @@
   - 从规范到测试驱动实现
   - 实战项目：NanoClaw Dashboard（v1.0.0 起步版）
 
+- **[Lesson 13](./Lesson13_SpecKit_Superpowers_Cooperation/)**：Spec-Kit × Superpowers 9 步协同
+  - Spec-Kit ↔ Superpowers 协作接入点与 9 步流程
+  - 需求侧 spec vs 执行侧 workflow 的本质分工
+  - 实战：知识日报 Agent 端到端搭建
+
 ## 项目结构
 
 - `Lesson12_Superpowers_Getting_Started/CourseWare/`：课程课件与直播协作文件

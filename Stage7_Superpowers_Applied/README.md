@@ -17,6 +17,11 @@ Master Superpowers — the third pillar of the AI-driven specification framework
   - From specification to test-driven implementation
   - Hands-on project: NanoClaw Dashboard (v1.0.0 starter)
 
+- **[Lesson 13](./Lesson13_SpecKit_Superpowers_Cooperation/)**: Spec-Kit × Superpowers 9-Step Cooperation
+  - Spec-Kit ↔ Superpowers integration points and the 9-step loop
+  - Demand-side spec vs execution-side workflow
+  - Hands-on: Knowledge-Daily-News Agent end-to-end build
+
 ## Project Structure
 
 - `Lesson12_Superpowers_Getting_Started/CourseWare/`: lesson slides and live collaboration files

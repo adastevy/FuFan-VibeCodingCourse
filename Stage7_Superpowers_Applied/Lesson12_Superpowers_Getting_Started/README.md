@@ -23,9 +23,9 @@ This lesson introduces the Superpowers framework — a TDD-first specification-d
 
 ## Project Assets
 
-### Frontend — `nanoclaw-dashboard/` (v1.0.0)
+### Frontend (v1) — `nanoclaw-dashboard/` (v1.0.0)
 
-SaaS-grade dark dashboard.
+SaaS-grade dark dashboard — entry-point version.
 
 - Tech stack: `Node.js (built-in)` `Vanilla JS` `inline CSS`
 - Highlights:
@@ -36,6 +36,17 @@ SaaS-grade dark dashboard.
 - Scope (intentional YAGNI):
   - All data is mocked (4 stat cards, agent list, workflow, logs, security panel)
   - The A0 case section will be rewritten as Next.js 14 + Tailwind with real APIs (upgraded to v2.0.0 later)
+
+### Frontend (v2) — [`nanoclaw-dashboard-v2/`](./nanoclaw-dashboard-v2/) (v0.2.1)
+
+Next.js production rewrite of the dashboard — Phase 1 + critical security patches.
+
+- Tech stack: `Next.js` `TypeScript` `Tailwind CSS` `Vitest`
+- Highlights:
+  - 5-state panel machine (closed / open / sending / received / error) with 42 TDD tests
+  - Wired `/api/chat` route to the NanoClaw backend contract
+  - Surfaces error state with retry / dismiss
+- Run: `pnpm install && pnpm dev` (requires backend running locally)
 
 ### Backend — [`nanoclaw-v2-backend/`](./nanoclaw-v2-backend/)
 

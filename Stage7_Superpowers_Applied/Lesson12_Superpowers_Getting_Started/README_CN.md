@@ -23,9 +23,9 @@
 
 ## 实战项目
 
-### 前端 —— `nanoclaw-dashboard/`（v1.0.0）
+### 前端 v1 —— `nanoclaw-dashboard/`（v1.0.0）
 
-SaaS 级暗色 Dashboard。
+SaaS 级暗色 Dashboard —— 入门段雏形版本。
 
 - 技术栈：`Node.js（原生）` `原生 JS` `内联 CSS`
 - 亮点：
@@ -36,6 +36,17 @@ SaaS 级暗色 Dashboard。
 - 边界（有意 YAGNI）：
   - 数据全部 mock（4 统计卡 / Agent 列表 / 工作流 / 日志 / 安全防线）
   - 后续 A0 案例段会重写为 Next.js 14 + Tailwind + 真接口（届时升级 v2.0.0）
+
+### 前端 v2 —— [`nanoclaw-dashboard-v2/`](./nanoclaw-dashboard-v2/)（v0.2.1）
+
+Next.js 生产版 Dashboard 重写 —— Phase 1 + 关键安全补丁。
+
+- 技术栈：`Next.js` `TypeScript` `Tailwind CSS` `Vitest`
+- 亮点：
+  - 5 态面板状态机（closed / open / sending / received / error），配套 42 个 TDD 测试
+  - `/api/chat` 路由打通 NanoClaw 后端契约
+  - 错误状态可重试 / 关闭
+- 运行：`pnpm install && pnpm dev`（需要本地后端先启动）
 
 ### 后端 —— [`nanoclaw-v2-backend/`](./nanoclaw-v2-backend/)
 

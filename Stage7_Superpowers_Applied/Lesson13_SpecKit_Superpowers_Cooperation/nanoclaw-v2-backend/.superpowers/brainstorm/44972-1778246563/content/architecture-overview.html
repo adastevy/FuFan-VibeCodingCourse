@@ -1,0 +1,101 @@
+<h2>NanoClaw v2 架构导览</h2>
+<p class="subtitle">基于今天 4 个 Explore agent 并行探索结果 · spec: docs/superpowers/specs/2026-05-07-nanoclaw-architecture-探索.md</p>
+
+<div class="section">
+  <span class="label">Message flow</span>
+  <div class="mockup">
+    <div class="mockup-header">channel → router → inbound.db → container → API → outbound.db → delivery → channel</div>
+    <div class="mockup-body" style="padding: 20px; font-family: ui-monospace, monospace; font-size: 13px; line-height: 1.7;">
+<pre style="margin:0;">外部用户
+   ↓ 平台事件
+[src/channels/]  ChannelAdapter.onInbound(platformId, threadId, msg)
+   ↓
+[src/router.ts]  messaging group → senderResolver → accessGate → engagement
+   ↓
+[session inbound.db]  INSERT messages_in (seq=even)  ← host writes
+   ↓ wake
+[Bun container]  poll 500ms · format · provider.query() · MCP tools
+   ↓
+[Anthropic API / compat]
+   ↓ stream events
+[session outbound.db]  INSERT messages_out (seq=odd)  ← container writes
+   ↓ poll
+[src/delivery.ts]  handleSystemAction · 写 inbound.db::delivered
+   ↓
+[ChannelAdapter.deliver()]
+   ↓
+外部用户（DM / reply / reaction / card）</pre>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <span class="label">4 大模块边界</span>
+  <div class="cards">
+    <div class="card" data-choice="channels" onclick="toggleSelect(this)">
+      <div class="card-image" style="background:#1f2937;color:#e5e7eb;display:flex;align-items:center;justify-content:center;font-size:48px;">📡</div>
+      <div class="card-body">
+        <h3>src/channels/</h3>
+        <p><b>稳定 API</b>: ChannelAdapter 接口 (adapter.ts:110)<br>
+        <b>红线</b>: 不要改 chat-sdk-bridge.ts 核心逻辑<br>
+        <b>新增</b>: native adapter 或 Chat SDK bridge 二选一</p>
+      </div>
+    </div>
+    <div class="card" data-choice="modules" onclick="toggleSelect(this)">
+      <div class="card-image" style="background:#7c3aed;color:#fff;display:flex;align-items:center;justify-content:center;font-size:48px;">🧩</div>
+      <div class="card-body">
+        <h3>src/modules/</h3>
+        <p><b>稳定 API</b>: 6 个 register* 函数<br>
+        <b>红线</b>: 模块禁止互相 import<br>
+        <b>加载顺序</b>: approvals → ... → self-mod</p>
+      </div>
+    </div>
+    <div class="card" data-choice="db" onclick="toggleSelect(this)">
+      <div class="card-image" style="background:#059669;color:#fff;display:flex;align-items:center;justify-content:center;font-size:48px;">🗄️</div>
+      <div class="card-body">
+        <h3>src/db/</h3>
+        <p><b>三 DB</b>: central + inbound + outbound<br>
+        <b>红线</b>: journal_mode=DELETE 不能改 WAL<br>
+        <b>seq parity</b>: host=even, container=odd</p>
+      </div>
+    </div>
+    <div class="card" data-choice="container" onclick="toggleSelect(this)">
+      <div class="card-image" style="background:#dc2626;color:#fff;display:flex;align-items:center;justify-content:center;font-size:48px;">📦</div>
+      <div class="card-body">
+        <h3>container/</h3>
+        <p><b>运行时</b>: Bun（host=Node）<br>
+        <b>稳定 API</b>: 33 文件 · provider + MCP 注册<br>
+        <b>红线</b>: 不要改 Dockerfile/entrypoint.sh</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <span class="label">6 个 registry 扩展点（NanoClaw 事实上的插件系统）</span>
+  <div class="mockup">
+    <div class="mockup-body" style="padding: 16px; font-family: ui-monospace, monospace; font-size: 12.5px; line-height: 1.9;">
+      <div>📡 <code>registerChannelAdapter(name, factory)</code> &nbsp;&nbsp;<span style="color:#6b7280;">→ src/channels/channel-registry.ts</span></div>
+      <div>📤 <code>registerDeliveryAction(action, handler)</code> &nbsp;&nbsp;<span style="color:#6b7280;">→ src/delivery.ts</span></div>
+      <div>✅ <code>registerApprovalHandler(action, handler)</code> &nbsp;&nbsp;<span style="color:#6b7280;">→ src/modules/approvals/primitive.ts</span></div>
+      <div>💬 <code>registerResponseHandler(handler)</code> &nbsp;&nbsp;<span style="color:#6b7280;">→ src/response-registry.ts</span></div>
+      <div>🤖 <code>registerProvider(name, factory)</code> &nbsp;&nbsp;<span style="color:#6b7280;">→ container/agent-runner/src/providers/</span></div>
+      <div>🔧 <code>registerTools([...])</code> &nbsp;&nbsp;<span style="color:#6b7280;">→ container/agent-runner/src/mcp-tools/</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <span class="label">⚠️ 硬编码逃生口（不被 registry 覆盖）</span>
+  <div class="pros-cons">
+    <div class="cons" style="grid-column: 1 / -1;">
+      <h4>这两处只能改 core，不能用 register 扩展</h4>
+      <ul>
+        <li><code>delivery.ts</code> 内联 <code>channel_type === 'agent'</code> 路由（agent-to-agent 走的）</li>
+        <li><code>delivery.ts</code> 内联 <code>content.type === 'ask_question'</code> 写 pending_questions</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<p class="subtitle" style="margin-top: 32px;">浏览器在 <code>http://localhost:54567</code>。可以点击上面的卡片选择想深入探讨的模块——选完回终端告诉我下一步要往哪走。</p>

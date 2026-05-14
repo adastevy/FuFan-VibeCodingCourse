@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>NanoClaw v2 架构探索</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<style>
+  :root {
+    --bg: #0d1117;
+    --panel: #161b22;
+    --panel-2: #1c232c;
+    --border: #30363d;
+    --text: #e6edf3;
+    --muted: #8b949e;
+    --accent: #58a6ff;
+    --green: #3fb950;
+    --yellow: #d29922;
+    --red: #f85149;
+    --purple: #bc8cff;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 32px 48px;
+    background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+    font-size: 14px; line-height: 1.6;
+  }
+  h1 { font-size: 28px; margin: 0 0 4px 0; }
+  h2 { font-size: 20px; margin: 40px 0 12px 0; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+  h3 { font-size: 15px; margin: 16px 0 8px 0; color: var(--accent); }
+  .subtitle { color: var(--muted); font-size: 14px; margin-bottom: 24px; }
+  .panel {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 8px; padding: 20px; margin-bottom: 16px;
+  }
+  code, .mono {
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+    font-size: 12.5px;
+    background: var(--panel-2); padding: 2px 6px; border-radius: 4px;
+    color: #ffa657;
+  }
+  .mermaid {
+    background: #f5f8fc; border-radius: 8px; padding: 24px;
+    text-align: center; overflow-x: auto;
+  }
+  table {
+    width: 100%; border-collapse: collapse; margin-top: 8px;
+    font-size: 13px;
+  }
+  th, td {
+    text-align: left; padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  th { background: var(--panel-2); color: var(--muted); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+  tr:hover td { background: rgba(88,166,255,0.05); }
+  .tag {
+    display: inline-block; padding: 2px 8px; border-radius: 12px;
+    font-size: 11px; font-weight: 600; margin-right: 4px;
+  }
+  .tag-green  { background: rgba(63,185,80,0.15);  color: var(--green);  border: 1px solid rgba(63,185,80,0.3); }
+  .tag-yellow { background: rgba(210,153,34,0.15); color: var(--yellow); border: 1px solid rgba(210,153,34,0.3); }
+  .tag-red    { background: rgba(248,81,73,0.15);  color: var(--red);    border: 1px solid rgba(248,81,73,0.3); }
+  .tag-purple { background: rgba(188,140,255,0.15); color: var(--purple); border: 1px solid rgba(188,140,255,0.3); }
+  .grid-4 {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;
+  }
+  .module-card {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 8px; padding: 16px;
+  }
+  .module-card h3 {
+    margin-top: 0; display: flex; align-items: center; gap: 8px;
+  }
+  .module-card .role {
+    font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px;
+  }
+  ul { margin: 6px 0; padding-left: 20px; }
+  li { margin: 3px 0; }
+  .legend { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; font-size: 12px; }
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+  .footer-hint {
+    margin-top: 40px; padding: 16px; background: var(--panel-2);
+    border-left: 3px solid var(--accent); border-radius: 4px;
+    color: var(--muted); font-size: 13px;
+  }
+  .stat-row { display: flex; gap: 24px; margin: 16px 0; }
+  .stat { background: var(--panel-2); padding: 12px 16px; border-radius: 8px; border: 1px solid var(--border); }
+  .stat-num { font-size: 22px; font-weight: 700; color: var(--accent); }
+  .stat-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+</style>
+</head>
+<body>
+
+<h1>NanoClaw v2 架构探索</h1>
+<p class="subtitle">面向二开者的代码地图 · 双进程 · 双 SQLite 为唯一 IO 面 · 自注册扩展点</p>
+
+<div class="stat-row">
+  <div class="stat"><div class="stat-num">96</div><div class="stat-label">src/ TS 文件</div></div>
+  <div class="stat"><div class="stat-num">33</div><div class="stat-label">container/ TS 文件</div></div>
+  <div class="stat"><div class="stat-num">8</div><div class="stat-label">modules 子系统</div></div>
+  <div class="stat"><div class="stat-num">13</div><div class="stat-label">DB migrations</div></div>
+  <div class="stat"><div class="stat-num">2</div><div class="stat-label">long-lived 扩展分支</div></div>
+</div>
+
+<h2>一、核心架构：消息流转完整路径</h2>
+<div class="panel">
+<p>整个系统是一个 <b>message-broker</b>：host 进程和 agent 容器之间没有 IPC、没有 stdin、没有文件 watcher，<b>唯一通道是两个 SQLite 文件</b>。</p>
+<div class="mermaid">
+sequenceDiagram
+    autonumber
+    participant Plat as 平台 Discord/Slack/CLI
+    participant Adp as ChannelAdapter<br/>src/channels
+    participant Rtr as router.ts
+    participant Mods as modules<br/>permissions/approvals
+    participant InDB as inbound.db<br/>host写·容器读
+    participant Ctr as agent-runner<br/>container
+    participant Prov as Provider<br/>Claude SDK
+    participant OutDB as outbound.db<br/>容器写·host读
+    participant Del as delivery.ts
+
+    Plat->>Adp: 平台事件
+    Adp->>Rtr: routeInbound(InboundEvent)
+    Rtr->>Mods: senderResolver / accessGate / scopeGate
+    Mods-->>Rtr: pass / drop / 触发 approval
+    Rtr->>InDB: writeSessionMessage<br/>messages_in, trigger=1
+    Rtr->>Ctr: wakeContainer
+    Note over InDB,Ctr: cross-mount 三铁律：<br/>journal_mode=DELETE<br/>host 写后立即 close<br/>单写者
+
+    loop poll loop
+        Ctr->>InDB: getPendingMessages<br/>mmap禁用，每次新读
+        InDB-->>Ctr: 待处理消息
+        Ctr->>Prov: provider.query()
+        Prov-->>Ctr: ProviderEvent 流
+        Ctr->>OutDB: writeMessageOut + session_state
+    end
+
+    Del->>OutDB: getDueOutboundMessages<br/>read-only
+    OutDB-->>Del: 待投递消息
+    Del->>InDB: 检查 delivered 表去重
+    Del->>Adp: adapter.deliver()
+    Adp->>Plat: 平台 API 推送
+    Del->>InDB: markDelivered host侧记账
+</div>
+</div>
+
+<h2>二、四个核心模块的职责边界</h2>
+<div class="grid-4">
+
+  <div class="module-card">
+    <div class="role">平台 IO 适配层</div>
+    <h3>📡 src/channels/</h3>
+    <p><b>职责：</b>把不同平台（Discord/Slack/CLI/iMessage…）的事件统一成 <code>InboundEvent</code>，把 <code>OutboundMessage</code> 投递回平台。</p>
+    <ul>
+      <li><code>adapter.ts</code> — <span class="tag tag-green">稳定 API</span> ChannelAdapter 接口契约</li>
+      <li><code>channel-registry.ts</code> — 自注册中心 + 启动时初始化</li>
+      <li><code>chat-sdk-bridge.ts</code> — 把 Chat SDK 适配器封装为 ChannelAdapter</li>
+      <li><code>cli.ts</code> — 唯一内置适配器</li>
+      <li><code>index.ts</code> — barrel，<b>skill 在这里 append import</b></li>
+    </ul>
+    <p style="color:var(--muted); font-size:12px;">⚠️ 实际平台代码不在 trunk，住在 <code>channels</code> 长期分支，由 <code>/add-discord</code> 等 skill 拷入。</p>
+  </div>
+
+  <div class="module-card">
+    <div class="role">可插拔策略层</div>
+    <h3>🧩 src/modules/</h3>
+    <p><b>职责：</b>通过 router/delivery 暴露的 hook 钩子，叠加跨切面行为。core 不依赖任何 module，缺失时 fallback 为 allow-all。</p>
+    <ul>
+      <li><code>permissions/</code> — sender/access/scope 三个 gate</li>
+      <li><code>approvals/</code> — 通用审批原语 + OneCLI 桥</li>
+      <li><code>scheduling/</code> — cron 任务（pre-task script 钩子）</li>
+      <li><code>agent-to-agent/</code> — agent 间路由 destinations</li>
+      <li><code>self-mod/</code> — install_packages / add_mcp_server</li>
+      <li><code>typing/</code> · <code>interactive/</code> · <code>mount-security/</code></li>
+    </ul>
+    <p style="color:var(--muted); font-size:12px;">⚠️ <code>modules/index.ts</code> 加载顺序敏感：approvals 必须早于 self-mod。</p>
+  </div>
+
+  <div class="module-card">
+    <div class="role">持久化 + 迁移</div>
+    <h3>🗃️ src/db/</h3>
+    <p><b>职责：</b>central DB（<code>data/v2.db</code>）的 schema、查询封装、迁移系统。<b>不包含 session DB 操作</b>（那在 <code>session-manager.ts</code>）。</p>
+    <ul>
+      <li><code>connection.ts</code> · <code>schema.ts</code> — 引导 + 引用 schema</li>
+      <li><code>agent-groups.ts</code> · <code>messaging-groups.ts</code> · <code>sessions.ts</code> — 实体查询</li>
+      <li><code>dropped-messages.ts</code> — 路由审计</li>
+      <li><code>migrations/</code> — 13 个 core + 3 个 module 迁移，<span class="tag tag-red">read-only</span></li>
+    </ul>
+    <p style="color:var(--muted); font-size:12px;">⚠️ session DB 走 <code>session-manager.ts</code> + <code>session-db.ts</code>，<b>开闭一次性写</b> 是不变式。</p>
+  </div>
+
+  <div class="module-card">
+    <div class="role">隔离 agent runtime</div>
+    <h3>📦 container/</h3>
+    <p><b>职责：</b>独立的 Bun 进程树。host 之外的一切：poll loop、provider 抽象、MCP 工具、formatter、destinations。</p>
+    <ul>
+      <li><code>agent-runner/src/poll-loop.ts</code> — 主循环（核心）</li>
+      <li><code>providers/</code> — Claude / mock / 可插拔 factory</li>
+      <li><code>mcp-tools/</code> — 7 个内置工具，barrel 自注册</li>
+      <li><code>db/</code> — inbound.db RO + outbound.db RW</li>
+      <li><code>destinations.ts</code> · <code>formatter.ts</code></li>
+    </ul>
+    <p style="color:var(--muted); font-size:12px;">⚠️ Bun 运行时，不是 Node。<code>bun:sqlite</code> 命名参数要带 <code>$</code> 前缀。</p>
+  </div>
+
+</div>
+
+<h2>三、扩展点 vs 内部实现 — 二开必看</h2>
+<div class="panel">
+<div class="legend">
+  <div class="legend-item"><span class="dot" style="background:var(--green)"></span> <b>稳定 API</b> — 可放心调用/append，受 upstream 保护</div>
+  <div class="legend-item"><span class="dot" style="background:var(--yellow)"></span> <b>边界文件</b> — fork 时小心，可能与 channels/providers 分支冲突</div>
+  <div class="legend-item"><span class="dot" style="background:var(--red)"></span> <b>internal</b> — 修改会被 upstream 冲掉或破坏不变式</div>
+  <div class="legend-item"><span class="dot" style="background:var(--purple)"></span> <b>注册型</b> — 自注册 barrel，append-only 安全</div>
+</div>
+
+<table>
+  <thead>
+    <tr><th style="width:90px">类别</th><th>位置 / 契约</th><th>说明</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><span class="tag tag-green">稳定</span></td><td><code>src/channels/adapter.ts</code> ChannelAdapter</td><td>实现 setup/deliver/subscribe/openDM 即可接入新平台</td></tr>
+    <tr><td><span class="tag tag-green">稳定</span></td><td><code>container/.../providers/types.ts</code> AgentProvider</td><td>query/push/isSessionInvalid 四方法接入新模型供应商</td></tr>
+    <tr><td><span class="tag tag-green">稳定</span></td><td>router.ts 5 个 hook</td><td>setSenderResolver / setAccessGate / setSenderScopeGate / setMessageInterceptor / setChannelRequestGate</td></tr>
+    <tr><td><span class="tag tag-green">稳定</span></td><td><code>approvals/primitive.ts</code> registerApprovalHandler</td><td>action 字符串 → 回调，写自己的审批流</td></tr>
+    <tr><td><span class="tag tag-green">稳定</span></td><td><code>mcp-tools/</code> registerTools</td><td>给 agent 加新工具（agent-to-agent 风格）</td></tr>
+    <tr><td><span class="tag tag-purple">注册</span></td><td><code>src/channels/index.ts</code></td><td>append 一行 import 注册 channel</td></tr>
+    <tr><td><span class="tag tag-purple">注册</span></td><td><code>src/providers/index.ts</code></td><td>append 一行 import 注册 host-side provider config</td></tr>
+    <tr><td><span class="tag tag-purple">注册</span></td><td><code>src/modules/index.ts</code></td><td>append 注册新策略模块（注意加载顺序）</td></tr>
+    <tr><td><span class="tag tag-purple">注册</span></td><td><code>container/.../mcp-tools/index.ts</code></td><td>append 注册新 MCP 工具</td></tr>
+    <tr><td><span class="tag tag-yellow">边界</span></td><td><code>src/index.ts</code> 主流程</td><td>upstream 经常在这里加 init 步骤；自定义改动尽量推到 modules</td></tr>
+    <tr><td><span class="tag tag-yellow">边界</span></td><td><code>src/router.ts</code> / <code>src/delivery.ts</code></td><td>核心路由；想改语义优先用 hook 而非改源码</td></tr>
+    <tr><td><span class="tag tag-yellow">边界</span></td><td><code>src/db/migrations/module-*.ts</code></td><td>新模块自己加 migration 走 module- 前缀</td></tr>
+    <tr><td><span class="tag tag-yellow">边界</span></td><td><code>container/agent-runner/src/poll-loop.ts</code></td><td>有 pre-task hook 但主体不应改</td></tr>
+    <tr><td><span class="tag tag-red">internal</span></td><td><code>src/db/migrations/0NN-*.ts</code></td><td>core 迁移，禁止编辑/重排</td></tr>
+    <tr><td><span class="tag tag-red">internal</span></td><td><code>src/session-manager.ts</code> 三铁律</td><td>journal_mode / open-close / 单写者，破坏即数据损坏</td></tr>
+    <tr><td><span class="tag tag-red">internal</span></td><td>session DB 路径 <code>/workspace/inbound.db</code></td><td>host/容器双方硬编码协议</td></tr>
+    <tr><td><span class="tag tag-red">internal</span></td><td>seq parity（host 偶数 / 容器奇数）</td><td>消息序号原子性依赖</td></tr>
+    <tr><td><span class="tag tag-red">internal</span></td><td>消息 ID 用 agent_group_id namespacing</td><td>fan-out 时避免 PRIMARY KEY 冲突</td></tr>
+    <tr><td><span class="tag tag-red">internal</span></td><td>心跳文件 <code>/workspace/.heartbeat</code></td><td>纯文件 mtime，非 DB</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2>四、二开建议方向</h2>
+<div class="panel">
+<ol>
+  <li><b>新平台接入</b> → 写个 ChannelAdapter，参考 <code>cli.ts</code> 或 chat-sdk-bridge 模式。<b>不要 fork channels 分支</b>，应该新建独立分支 + 自己的 install skill。</li>
+  <li><b>新 LLM 供应商</b> → 实现 <code>AgentProvider</code> + 在 <code>providers/index.ts</code> append 注册，同时在 host 端 <code>src/providers/&lt;name&gt;.ts</code> 加 container-config（参考 OpenCode）。</li>
+  <li><b>新策略行为</b>（限流、内容审查、统计）→ 写 module，挂 router hook，不要改 router 本身。</li>
+  <li><b>给 agent 加工具</b> → 写 MCP tool，container 自带 server 不需要外置。</li>
+  <li><b>持久化新数据</b> → 写 module 迁移走 <code>module-&lt;name&gt;-*.ts</code> 命名，避开 core 编号区。</li>
+</ol>
+</div>
+
+<div class="footer-hint">
+  <b>下一步：</b>这张图覆盖 90% 的二开场景。在浏览器看完后回 terminal 告诉我：<br>
+  ① 这版结构 OK 不？需要补充哪个维度？<br>
+  ② mermaid 图保留 <b>sequenceDiagram</b> 时序版还是改成 <b>flowchart</b> 拓扑版？<br>
+  ③ 确认无误后我把这些内容落到 <code>docs/superpowers/specs/2026-05-07-nanoclaw-architecture-探索.md</code>。
+</div>
+
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'default',
+    sequence: { actorMargin: 60, messageFontSize: 13, noteFontSize: 12 }
+  });
+</script>
+</body>
+</html>

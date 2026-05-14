@@ -1,0 +1,233 @@
+<h2>NanoClaw v2 消息流转 · 可视化</h2>
+<p class="subtitle">从用户敲下消息到收到回复，中间发生了什么 · 颜色区分进程边界 · 蓝=Host / 紫=Container / 绿=DB / 橙=外部</p>
+
+<style>
+.flow-stage {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  margin: 16px 0;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  border-left: 4px solid #ccc;
+}
+.flow-stage.user { border-left-color: #f59e0b; }
+.flow-stage.host { border-left-color: #3b82f6; }
+.flow-stage.db   { border-left-color: #10b981; }
+.flow-stage.cont { border-left-color: #8b5cf6; }
+.flow-stage.api  { border-left-color: #ef4444; }
+
+.swim {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: 16px;
+  align-items: center;
+}
+.swim-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #6b7280;
+  text-align: right;
+}
+.swim-label .badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 6px;
+  color: white;
+  margin-bottom: 4px;
+  font-size: 10px;
+}
+.b-user { background: #f59e0b; }
+.b-host { background: #3b82f6; }
+.b-db   { background: #10b981; }
+.b-cont { background: #8b5cf6; }
+.b-api  { background: #ef4444; }
+
+.step-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: #1f2937; color: white;
+  font-weight: 700; font-size: 14px;
+  margin-right: 10px;
+}
+.box {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-family: ui-monospace, "SF Mono", monospace;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.box code { background: #eef2ff; padding: 1px 6px; border-radius: 4px; color: #4338ca; font-size: 12px; }
+.arrow {
+  text-align: center;
+  font-size: 22px;
+  color: #9ca3af;
+  margin: -4px 0;
+  padding-left: 110px;
+}
+
+.db-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 8px;
+}
+.db-cyl {
+  background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+  border: 2px solid #10b981;
+  border-radius: 16px;
+  padding: 14px;
+  font-family: ui-monospace, monospace;
+  font-size: 12px;
+}
+.db-cyl h4 { margin: 0 0 8px; font-size: 13px; color: #065f46; font-family: ui-sans-serif, system-ui; }
+.db-cyl .write { color: #059669; font-weight: 700; }
+.db-cyl .read  { color: #6b7280; }
+
+.boundary-bar {
+  position: relative;
+  height: 32px;
+  background: repeating-linear-gradient(45deg, #fef3c7, #fef3c7 8px, #fde68a 8px, #fde68a 16px);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 12px;
+  color: #92400e;
+  margin: 12px 0;
+}
+
+.invariant {
+  background: #fef2f2;
+  border-left: 3px solid #dc2626;
+  padding: 10px 14px;
+  margin-top: 8px;
+  font-size: 12.5px;
+  border-radius: 0 6px 6px 0;
+}
+.invariant b { color: #991b1b; }
+</style>
+
+<div class="flow-stage user">
+  <div class="swim">
+    <div class="swim-label"><div class="badge b-user">外部</div><div>外部用户</div></div>
+    <div class="box"><span class="step-num">1</span>用户在 Discord / Slack / Telegram / CLI 发送消息<br>
+    <span style="color:#6b7280;font-size:11px;">"帮我看一下昨天的报错日志"</span></div>
+  </div>
+</div>
+<div class="arrow">▼</div>
+
+<div class="flow-stage host">
+  <div class="swim">
+    <div class="swim-label"><div class="badge b-host">Host</div><div>channels/</div></div>
+    <div class="box"><span class="step-num">2</span><b>ChannelAdapter</b> 收到平台事件<br>
+    <code>setupConfig.onInbound(platformId, threadId, message)</code></div>
+  </div>
+</div>
+<div class="arrow">▼</div>
+
+<div class="flow-stage host">
+  <div class="swim">
+    <div class="swim-label"><div class="badge b-host">Host</div><div>router.ts</div></div>
+    <div class="box"><span class="step-num">3</span><b>路由四步</b><br>
+    ① 找 messaging group → ② <code>senderResolver</code> 解析用户身份 → ③ <code>accessGate</code> 检查权限 → ④ 选 agent + session</div>
+  </div>
+</div>
+<div class="arrow">▼</div>
+
+<div class="flow-stage db">
+  <div class="swim">
+    <div class="swim-label"><div class="badge b-db">SQLite</div><div>session DBs</div></div>
+    <div>
+      <div class="box"><span class="step-num">4</span>Host 写 <code>messages_in</code>（seq=偶数）→ 唤醒容器</div>
+      <div class="db-split">
+        <div class="db-cyl">
+          <h4>📥 inbound.db</h4>
+          <div><span class="write">✏️ Host 写入</span></div>
+          <div><span class="read">👁️ Container 只读</span></div>
+          <div style="margin-top:6px;color:#065f46;">messages_in · destinations · session_routing · delivered</div>
+        </div>
+        <div class="db-cyl">
+          <h4>📤 outbound.db</h4>
+          <div><span class="read">👁️ Host 只读</span></div>
+          <div><span class="write">✏️ Container 写入</span></div>
+          <div style="margin-top:6px;color:#065f46;">messages_out · processing_ack · session_state</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="boundary-bar">⚠️ 跨进程边界 · Docker mount · 单写者铁律</div>
+
+<div class="flow-stage cont">
+  <div class="swim">
+    <div class="swim-label"><div class="badge b-cont">Container</div><div>Bun + agent-runner</div></div>
+    <div class="box"><span class="step-num">5</span><b>poll-loop.ts</b> 每 500ms 醒一次<br>
+    读 <code>messages_in</code> → 用 <b>formatter.ts</b> 拼成 XML prompt → 注入 destinations<br>
+    每次 touch <code>/workspace/.heartbeat</code>（host 用它判断容器是否还活着）</div>
+  </div>
+</div>
+<div class="arrow">▼</div>
+
+<div class="flow-stage api">
+  <div class="swim">
+    <div class="swim-label"><div class="badge b-api">外部</div><div>LLM API</div></div>
+    <div class="box"><span class="step-num">6</span>容器调 <code>provider.query()</code><br>
+    Claude Agent SDK / OpenCode / DeepSeek 等 → Anthropic Messages API → 流式 events 回来</div>
+  </div>
+</div>
+<div class="arrow">▼</div>
+
+<div class="flow-stage cont">
+  <div class="swim">
+    <div class="swim-label"><div class="badge b-cont">Container</div><div>MCP tools</div></div>
+    <div class="box"><span class="step-num">7</span>Agent 调 MCP 工具<br>
+    <code>send_message</code> · <code>schedule_task</code> · <code>create_agent</code> · <code>install_packages</code> · ...<br>
+    每次工具调用都 INSERT 一行到 <code>messages_out</code>（seq=奇数）</div>
+  </div>
+</div>
+<div class="arrow">▼</div>
+
+<div class="flow-stage host">
+  <div class="swim">
+    <div class="swim-label"><div class="badge b-host">Host</div><div>delivery.ts</div></div>
+    <div class="box"><span class="step-num">8</span>独立轮询循环（1s 频率）<br>
+    读 <code>messages_out</code> → 分发 system action（registry 表 OR 内联硬编码）<br>
+    将 platform_msg_id 写回 <code>inbound.db::delivered</code>（避免破坏 outbound 单写）</div>
+  </div>
+</div>
+<div class="arrow">▼</div>
+
+<div class="flow-stage host">
+  <div class="swim">
+    <div class="swim-label"><div class="badge b-host">Host</div><div>channels/</div></div>
+    <div class="box"><span class="step-num">9</span>同一个 ChannelAdapter 实例<br>
+    <code>adapter.deliver(platformId, threadId, message)</code> → postMessage / addReaction / editMessage</div>
+  </div>
+</div>
+<div class="arrow">▼</div>
+
+<div class="flow-stage user">
+  <div class="swim">
+    <div class="swim-label"><div class="badge b-user">外部</div><div>用户</div></div>
+    <div class="box"><span class="step-num">10</span>用户在 Discord / Slack / Telegram 看到 agent 回复 ✨</div>
+  </div>
+</div>
+
+<div class="section" style="margin-top: 32px;">
+  <span class="label">🔥 4 条不变量（违反任何一条 = 数据丢失或死锁）</span>
+  <div class="invariant"><b>① 单写者铁律</b> · Host 永远不写 outbound.db，Container 永远不写 inbound.db。delivered 表写 inbound 而非 outbound 就是为了守住这条。</div>
+  <div class="invariant"><b>② journal_mode = DELETE</b> · 不能改 WAL。WAL 的 -shm 内存映射在 Docker mount 上不刷新到 guest，容器会读到 stale snapshot 卡死。</div>
+  <div class="invariant"><b>③ Seq parity</b> · Host=偶数 · Container=奇数。disjoint namespace 让 agent 用 seq 跨方向引用消息（"edit message #5" 不歧义）。</div>
+  <div class="invariant"><b>④ Heartbeat 是文件 mtime</b> · 不是 DB 字段。容器 touch <code>/workspace/.heartbeat</code>，host sweep 60s 检查 mtime。设计动机：长跑任务（多小时 Bash）不会被误杀。</div>
+</div>
+
+<p class="subtitle" style="margin-top: 24px;">看完这张图，第三步开始你应该能在源码里追每一步对应的函数调用。下一步想看哪部分的细节？告诉我，我可以画那一层的 zoom-in 图。</p>

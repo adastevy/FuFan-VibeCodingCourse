@@ -1,0 +1,552 @@
+{
+  "version": "1.0.0",
+  "lastScanned": 1778593101244,
+  "projectRoot": "/Users/muyu/projects/nanoclaw-fork/nanoclaw-v2",
+  "techStack": {
+    "languages": [
+      {
+        "name": "JavaScript/TypeScript",
+        "version": ">=20",
+        "confidence": "high",
+        "markers": [
+          "package.json"
+        ]
+      },
+      {
+        "name": "TypeScript",
+        "version": null,
+        "confidence": "high",
+        "markers": [
+          "tsconfig.json"
+        ]
+      }
+    ],
+    "frameworks": [
+      {
+        "name": "vitest",
+        "version": "4.0.18",
+        "category": "testing"
+      }
+    ],
+    "packageManager": "pnpm",
+    "runtime": "Node.js 20"
+  },
+  "build": {
+    "buildCommand": "npm run build 2>&1 | head -50",
+    "testCommand": "pnpm test",
+    "lintCommand": "pnpm lint",
+    "devCommand": "pnpm dev",
+    "scripts": {
+      "build": "tsc",
+      "start": "node dist/index.js",
+      "dev": "tsx src/index.ts",
+      "typecheck": "tsc --noEmit",
+      "format": "prettier --write \"src/**/*.ts\"",
+      "format:fix": "prettier --write \"src/**/*.ts\"",
+      "format:check": "prettier --check \"src/**/*.ts\"",
+      "prepare": "husky",
+      "setup": "tsx setup/index.ts",
+      "setup:auto": "tsx setup/auto.ts",
+      "chat": "tsx scripts/chat.ts",
+      "auth": "tsx src/whatsapp-auth.ts",
+      "lint": "eslint src/",
+      "lint:fix": "eslint src/ --fix",
+      "test": "vitest run",
+      "test:watch": "vitest"
+    }
+  },
+  "conventions": {
+    "namingStyle": "camelCase",
+    "importStyle": "ES modules",
+    "testPattern": null,
+    "fileOrganization": null
+  },
+  "structure": {
+    "isMonorepo": true,
+    "workspaces": [],
+    "mainDirectories": [
+      "assets",
+      "docs",
+      "scripts",
+      "src"
+    ],
+    "gitBranches": {
+      "defaultBranch": "main",
+      "branchingStrategy": null
+    }
+  },
+  "customNotes": [],
+  "directoryMap": {
+    "assets": {
+      "path": "assets",
+      "purpose": "Static assets",
+      "fileCount": 8,
+      "lastAccessed": 1778593101228,
+      "keyFiles": [
+        "nanoclaw-favicon.png",
+        "nanoclaw-icon.png",
+        "nanoclaw-logo-dark.png",
+        "nanoclaw-logo.png",
+        "nanoclaw-profile.jpeg"
+      ]
+    },
+    "config-examples": {
+      "path": "config-examples",
+      "purpose": null,
+      "fileCount": 1,
+      "lastAccessed": 1778593101232,
+      "keyFiles": [
+        "mount-allowlist.json"
+      ]
+    },
+    "container": {
+      "path": "container",
+      "purpose": null,
+      "fileCount": 5,
+      "lastAccessed": 1778593101233,
+      "keyFiles": [
+        "CLAUDE.md",
+        "Dockerfile",
+        "build.sh",
+        "entrypoint.sh"
+      ]
+    },
+    "data": {
+      "path": "data",
+      "purpose": "Data files",
+      "fileCount": 5,
+      "lastAccessed": 1778593101234,
+      "keyFiles": [
+        "circuit-breaker.json",
+        "install-id",
+        "v2.db",
+        "v2.db-shm",
+        "v2.db-wal"
+      ]
+    },
+    "dist": {
+      "path": "dist",
+      "purpose": "Distribution/build output",
+      "fileCount": 136,
+      "lastAccessed": 1778593101234,
+      "keyFiles": [
+        "attachment-naming.d.ts",
+        "attachment-naming.d.ts.map",
+        "attachment-naming.js",
+        "attachment-naming.js.map",
+        "attachment-naming.test.d.ts"
+      ]
+    },
+    "docs": {
+      "path": "docs",
+      "purpose": "Documentation",
+      "fileCount": 24,
+      "lastAccessed": 1778593101234,
+      "keyFiles": [
+        "APPLE-CONTAINER-NETWORKING.md",
+        "BRANCH-FORK-MAINTENANCE.md",
+        "README.md",
+        "REQUIREMENTS.md",
+        "SDK_DEEP_DIVE.md"
+      ]
+    },
+    "groups": {
+      "path": "groups",
+      "purpose": null,
+      "fileCount": 0,
+      "lastAccessed": 1778593101234,
+      "keyFiles": []
+    },
+    "launchd": {
+      "path": "launchd",
+      "purpose": null,
+      "fileCount": 1,
+      "lastAccessed": 1778593101235,
+      "keyFiles": [
+        "com.nanoclaw.plist"
+      ]
+    },
+    "logs": {
+      "path": "logs",
+      "purpose": null,
+      "fileCount": 3,
+      "lastAccessed": 1778593101235,
+      "keyFiles": [
+        "nanoclaw.error.log",
+        "nanoclaw.log",
+        "setup.log"
+      ]
+    },
+    "repo-tokens": {
+      "path": "repo-tokens",
+      "purpose": null,
+      "fileCount": 3,
+      "lastAccessed": 1778593101235,
+      "keyFiles": [
+        "README.md",
+        "action.yml",
+        "badge.svg"
+      ]
+    },
+    "scripts": {
+      "path": "scripts",
+      "purpose": "Build/utility scripts",
+      "fileCount": 14,
+      "lastAccessed": 1778593101236,
+      "keyFiles": [
+        "chat.ts",
+        "cleanup-sessions.sh",
+        "delete-cli-agent.ts",
+        "init-cli-agent.ts",
+        "init-first-agent.ts"
+      ]
+    },
+    "setup": {
+      "path": "setup",
+      "purpose": null,
+      "fileCount": 51,
+      "lastAccessed": 1778593101236,
+      "keyFiles": [
+        "add-discord.sh",
+        "add-imessage.sh",
+        "add-signal.sh",
+        "add-slack.sh",
+        "add-teams.sh"
+      ]
+    },
+    "specs": {
+      "path": "specs",
+      "purpose": null,
+      "fileCount": 0,
+      "lastAccessed": 1778593101236,
+      "keyFiles": []
+    },
+    "src": {
+      "path": "src",
+      "purpose": "Source code",
+      "fileCount": 34,
+      "lastAccessed": 1778593101236,
+      "keyFiles": [
+        "attachment-naming.test.ts",
+        "attachment-naming.ts",
+        "attachment-safety.ts",
+        "circuit-breaker.test.ts",
+        "circuit-breaker.ts"
+      ]
+    },
+    "repo-tokens/examples": {
+      "path": "repo-tokens/examples",
+      "purpose": "Example code",
+      "fileCount": 4,
+      "lastAccessed": 1778593101238,
+      "keyFiles": [
+        "green.svg",
+        "red.svg",
+        "yellow-green.svg"
+      ]
+    }
+  },
+  "hotPaths": [
+    {
+      "path": "specs/multi-platform-content/brainstorming.md",
+      "accessCount": 14,
+      "lastAccessed": 1778666085362,
+      "type": "file"
+    },
+    {
+      "path": "specs/wire-nanoclaw-channel-skill/spec.md",
+      "accessCount": 11,
+      "lastAccessed": 1778651277290,
+      "type": "file"
+    },
+    {
+      "path": "specs/multi-platform-content/drafts/2026-05-13/research.md",
+      "accessCount": 9,
+      "lastAccessed": 1778663030223,
+      "type": "file"
+    },
+    {
+      "path": "",
+      "accessCount": 8,
+      "lastAccessed": 1778660563154,
+      "type": "directory"
+    },
+    {
+      "path": "specs/wire-nanoclaw-channel-skill/baseline-failures.md",
+      "accessCount": 7,
+      "lastAccessed": 1778651282487,
+      "type": "file"
+    },
+    {
+      "path": ".claude/skills/wire-nanoclaw-channel/SKILL.md",
+      "accessCount": 7,
+      "lastAccessed": 1778651664056,
+      "type": "file"
+    },
+    {
+      "path": "specs/multi-platform-content/drafts/2026-05-13/xiaohongshu.md",
+      "accessCount": 6,
+      "lastAccessed": 1778661145384,
+      "type": "file"
+    },
+    {
+      "path": "specs/multi-platform-content/drafts/2026-05-13/weibo.md",
+      "accessCount": 5,
+      "lastAccessed": 1778661148197,
+      "type": "file"
+    },
+    {
+      "path": "specs/multi-platform-content/drafts/2026-05-13/wechat-official.md",
+      "accessCount": 5,
+      "lastAccessed": 1778661385587,
+      "type": "file"
+    },
+    {
+      "path": ".specify/feature.json",
+      "accessCount": 4,
+      "lastAccessed": 1778597241073,
+      "type": "file"
+    },
+    {
+      "path": ".claude/skills/wire-nanoclaw-channel/sanity-check.sh",
+      "accessCount": 4,
+      "lastAccessed": 1778597974409,
+      "type": "file"
+    },
+    {
+      "path": "specs/wire-nanoclaw-channel-skill/plan.md",
+      "accessCount": 4,
+      "lastAccessed": 1778651284316,
+      "type": "file"
+    },
+    {
+      "path": ".claude/skills/style-xiaohongshu/SKILL.md",
+      "accessCount": 4,
+      "lastAccessed": 1778661098515,
+      "type": "file"
+    },
+    {
+      "path": ".claude/skills/style-weibo/SKILL.md",
+      "accessCount": 4,
+      "lastAccessed": 1778661098911,
+      "type": "file"
+    },
+    {
+      "path": ".claude/skills/style-wechat-official/SKILL.md",
+      "accessCount": 4,
+      "lastAccessed": 1778661099301,
+      "type": "file"
+    },
+    {
+      "path": "package.json",
+      "accessCount": 3,
+      "lastAccessed": 1778595612705,
+      "type": "file"
+    },
+    {
+      "path": "specs/wire-nanoclaw-channel-skill/clarifications.md",
+      "accessCount": 3,
+      "lastAccessed": 1778597461244,
+      "type": "file"
+    },
+    {
+      "path": "specs/wire-nanoclaw-channel-skill/tasks.md",
+      "accessCount": 3,
+      "lastAccessed": 1778597968265,
+      "type": "file"
+    },
+    {
+      "path": "specs/daily-news-agent/retrospective.md",
+      "accessCount": 3,
+      "lastAccessed": 1778651278251,
+      "type": "file"
+    },
+    {
+      "path": "specs/lessons-learned/brainstorming.md",
+      "accessCount": 3,
+      "lastAccessed": 1778660110691,
+      "type": "file"
+    },
+    {
+      "path": "specs/daily-news-agent/spec.md",
+      "accessCount": 3,
+      "lastAccessed": 1778666091124,
+      "type": "file"
+    },
+    {
+      "path": "src/channels/index.ts",
+      "accessCount": 2,
+      "lastAccessed": 1778595305553,
+      "type": "file"
+    },
+    {
+      "path": ".env",
+      "accessCount": 2,
+      "lastAccessed": 1778595509298,
+      "type": "file"
+    },
+    {
+      "path": "src/channels/telegram.ts",
+      "accessCount": 2,
+      "lastAccessed": 1778659739455,
+      "type": "file"
+    },
+    {
+      "path": ".claude/skills/platform-aware-citation/SKILL.md",
+      "accessCount": 2,
+      "lastAccessed": 1778661474065,
+      "type": "file"
+    },
+    {
+      "path": ".claude/skills/platform-aware-citation/failing-test.md",
+      "accessCount": 2,
+      "lastAccessed": 1778661476507,
+      "type": "file"
+    },
+    {
+      "path": "specs/daily-news-agent/plan.md",
+      "accessCount": 2,
+      "lastAccessed": 1778663017959,
+      "type": "file"
+    },
+    {
+      "path": "specs/daily-news-agent/brainstorming.md",
+      "accessCount": 2,
+      "lastAccessed": 1778663025181,
+      "type": "file"
+    },
+    {
+      "path": "container/agent-runner/src/mcp-tools/agents.ts",
+      "accessCount": 2,
+      "lastAccessed": 1778663025331,
+      "type": "file"
+    },
+    {
+      "path": "src/modules/daily-news/index.ts",
+      "accessCount": 2,
+      "lastAccessed": 1778663030386,
+      "type": "file"
+    },
+    {
+      "path": "src/db/migrations/014-daily-news.ts",
+      "accessCount": 2,
+      "lastAccessed": 1778663036238,
+      "type": "file"
+    },
+    {
+      "path": ".claude/settings.json",
+      "accessCount": 1,
+      "lastAccessed": 1778593117770,
+      "type": "file"
+    },
+    {
+      "path": ".claude/skills/add-telegram/SKILL.md",
+      "accessCount": 1,
+      "lastAccessed": 1778595271913,
+      "type": "file"
+    },
+    {
+      "path": "src/channels/channel-registry.ts",
+      "accessCount": 1,
+      "lastAccessed": 1778595345441,
+      "type": "file"
+    },
+    {
+      "path": ".specify/templates/spec-template.md",
+      "accessCount": 1,
+      "lastAccessed": 1778596963183,
+      "type": "file"
+    },
+    {
+      "path": ".specify/init-options.json",
+      "accessCount": 1,
+      "lastAccessed": 1778596963509,
+      "type": "file"
+    },
+    {
+      "path": ".specify/extensions.yml",
+      "accessCount": 1,
+      "lastAccessed": 1778596963610,
+      "type": "file"
+    },
+    {
+      "path": "specs/wire-nanoclaw-channel-skill/checklists/requirements.md",
+      "accessCount": 1,
+      "lastAccessed": 1778597121311,
+      "type": "file"
+    },
+    {
+      "path": ".specify/templates/tasks-template.md",
+      "accessCount": 1,
+      "lastAccessed": 1778597714731,
+      "type": "file"
+    },
+    {
+      "path": "specs/wire-nanoclaw-channel-skill/review.md",
+      "accessCount": 1,
+      "lastAccessed": 1778651282955,
+      "type": "file"
+    },
+    {
+      "path": "specs/wire-nanoclaw-channel-skill/green-rerun.md",
+      "accessCount": 1,
+      "lastAccessed": 1778651283866,
+      "type": "file"
+    },
+    {
+      "path": "specs/wire-nanoclaw-channel-skill/retrospective.md",
+      "accessCount": 1,
+      "lastAccessed": 1778651661635,
+      "type": "file"
+    },
+    {
+      "path": "src/modules/daily-news/types.ts",
+      "accessCount": 1,
+      "lastAccessed": 1778663000979,
+      "type": "file"
+    },
+    {
+      "path": "src/modules/daily-news/config.ts",
+      "accessCount": 1,
+      "lastAccessed": 1778663001165,
+      "type": "file"
+    },
+    {
+      "path": "src/modules/daily-news/db.ts",
+      "accessCount": 1,
+      "lastAccessed": 1778663001371,
+      "type": "file"
+    },
+    {
+      "path": "src/modules/daily-news/runner.ts",
+      "accessCount": 1,
+      "lastAccessed": 1778663001587,
+      "type": "file"
+    },
+    {
+      "path": "src/modules/daily-news/fetcher.ts",
+      "accessCount": 1,
+      "lastAccessed": 1778663001733,
+      "type": "file"
+    },
+    {
+      "path": "src/modules/daily-news/formatter.ts",
+      "accessCount": 1,
+      "lastAccessed": 1778663004012,
+      "type": "file"
+    },
+    {
+      "path": "src/modules/daily-news/dedup.ts",
+      "accessCount": 1,
+      "lastAccessed": 1778663004406,
+      "type": "file"
+    },
+    {
+      "path": "src/modules/daily-news/setup.ts",
+      "accessCount": 1,
+      "lastAccessed": 1778663004811,
+      "type": "file"
+    }
+  ],
+  "userDirectives": []
+}

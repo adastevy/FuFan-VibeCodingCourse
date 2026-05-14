@@ -26,7 +26,44 @@ The first session of the Spec-Kit ↔ Superpowers cooperative series. Build a Kn
 
 ## Project Assets
 
-*(To be added after live session — Knowledge-Daily-News Agent project)*
+Two full project trees backing the live demo — frontend and backend, both ready to clone and run.
+
+### Backend — [`nanoclaw-v2-backend/`](./nanoclaw-v2-backend/)
+
+NanoClaw v2 backend, evolved with the multi-platform content generation pipeline.
+
+- **5 NanoClaw agent groups** under `groups/`: `content-coordinator`, `content-researcher`, `gongzhonghao-writer`, `weibo-writer`, `xiaohongshu-writer` — each ships with its `CLAUDE.local.md` (force-included so students can reproduce the agent ACL)
+- **Content-generation module** under `src/modules/content-generation/`: DB migration `015_content_generation.sql`, host-side `writer-interceptor.ts` that persists writer output into `content_articles`
+- **Setup script**: `scripts/setup-content-agents.ts` provisions the 5 `agent_groups` rows plus the `agent_destinations` ACL
+- AI workflow configs preserved: `.claude/`, `.specify/`, `.superpowers/`, `.omc/`
+- Excluded from the repo: `node_modules/`, `dist/`, `logs/`, `data/`, `.env`, `.git/`
+
+### Frontend — [`nanoclaw-dashboard-v2/`](./nanoclaw-dashboard-v2/)
+
+Dashboard with the multi-platform content surfaces wired to the backend.
+
+- **4 API routes** under `app/api/content-generation/`: `trigger`, `list`, `status`, `articles`
+- **5 components** under `components/dashboard/`: `content-generation-*`, `content-history`, `content-showcase`
+- **2 pages**: `app/(dashboard)/content-generation/page.tsx` plus the `showcase/` portfolio sub-page
+- Backend contract typed in `lib/nanoclaw/contract.ts`
+
+### Setup (Reproduce the End-to-End Demo)
+
+```bash
+# 1. Backend
+cd nanoclaw-v2-backend
+pnpm install
+cp .env.example .env                  # fill in your own keys
+pnpm tsx scripts/setup-content-agents.ts   # create 5 agent_groups + ACL
+pnpm run dev
+
+# 2. Frontend (new terminal)
+cd nanoclaw-dashboard-v2
+pnpm install
+pnpm run dev -p 4001                  # open http://localhost:4001
+
+# 3. Trigger a task from the dashboard and watch the 5 agents collaborate end-to-end
+```
 
 ## About `.excalidraw` Files
 

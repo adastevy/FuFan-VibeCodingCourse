@@ -1,0 +1,51 @@
+<!-- filename: which-module-to-explore.html -->
+<style>
+  .picker { max-width: 1100px; margin: 0 auto; padding: 24px 16px; }
+  .picker h1 { font-size: 22px; margin-bottom: 4px; }
+  .picker .lead { color: #888; margin-bottom: 24px; font-size: 14px; line-height: 1.6; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+  .card { background: rgba(255,255,255,0.04); border: 1.5px solid rgba(255,255,255,0.10); border-radius: 10px; padding: 18px; cursor: pointer; transition: all 0.15s ease; }
+  .card:hover { border-color: rgba(100,200,255,0.5); transform: translateY(-2px); }
+  .card.selected { border-color: rgb(100,200,255); background: rgba(100,200,255,0.08); }
+  .card h3 { margin: 0 0 8px 0; font-size: 16px; }
+  .card .badge { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 4px; background: rgba(255,255,255,0.08); margin-left: 6px; vertical-align: middle; }
+  .card p { margin: 0; font-size: 13px; color: #aaa; line-height: 1.5; }
+  .card .case-hint { margin-top: 10px; font-size: 12px; color: #6cf; }
+  .footer { margin-top: 24px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.08); font-size: 12px; color: #888; }
+</style>
+
+<div class="picker">
+  <h1>看完架构，你最想先深挖哪一块？</h1>
+  <p class="lead">点一张卡片告诉我——你的选择会指引我们后续案例段的优先顺序。<br>架构图很大，但 9 个案例一个一个来，你先点哪块我就先讲哪块。</p>
+
+  <div class="grid">
+    <div class="card" data-choice="channels">
+      <h3>消息通道层 <span class="badge">8 文件</span></h3>
+      <p>怎么把 NanoClaw 接到 Discord / iMessage / Telegram / 微信群 / 自建 Web —— 那条 onInbound / onOutbound 的接缝。</p>
+      <div class="case-hint">→ 对应案例：A1 接微信群 / A0 自建 Web 前端</div>
+    </div>
+
+    <div class="card" data-choice="modules">
+      <h3>业务能力模块 <span class="badge">38 文件</span></h3>
+      <p>permissions / approvals / scheduling / self-mod —— 通过 hook 注册扩展能力，每个模块自包含、互不 import 的解耦设计。</p>
+      <div class="case-hint">→ 对应案例：A6 Gates / A2 定时任务 / A3 self-mod</div>
+    </div>
+
+    <div class="card" data-choice="db">
+      <h3>三 DB 持久化 <span class="badge">22 文件</span></h3>
+      <p>central / inbound / outbound 三 SQLite 文件 + 三个跨容器不变量（journal=DELETE / 写完 close / 单写者）—— NanoClaw 最 load-bearing 的工程纪律。</p>
+      <div class="case-hint">→ 对应案例：A5 跨会话记忆 / B2 数据隔离</div>
+    </div>
+
+    <div class="card" data-choice="container">
+      <h3>Agent 容器化 <span class="badge">container/</span></h3>
+      <p>每个 agent group = 一个独立 Docker + 一份独立 CLAUDE.md + 独立内存。base 镜像、Bun 运行时、CLAUDE.md compose 机制。</p>
+      <div class="case-hint">→ 对应案例：A6 Gates 改 CLAUDE.md / A4 多 agent 协作</div>
+    </div>
+  </div>
+
+  <div class="footer">
+    点选后回终端告诉我你点了哪块（或者点完几张都行——我能看到你的全部选择）。<br>
+    <i>这就是 v5 visual brainstorming companion 的核心循环：Claude 推画面 → 你在浏览器点选 → Claude 看到 → 下一轮调整。</i>
+  </div>
+</div>

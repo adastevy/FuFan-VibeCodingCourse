@@ -18,6 +18,8 @@ temp*.json
 !Stage6_SpecKit_Applied/Lesson11_SpecKit_Advanced_Practice/MyAgentHub/agenthub/.claude/**
 !Stage7_Superpowers_Applied/Lesson12_Superpowers_Getting_Started/nanoclaw-v2-backend/.claude/
 !Stage7_Superpowers_Applied/Lesson12_Superpowers_Getting_Started/nanoclaw-v2-backend/.claude/**
+!Stage7_Superpowers_Applied/Lesson13_SpecKit_Superpowers_Cooperation/nanoclaw-v2-backend/.claude/
+!Stage7_Superpowers_Applied/Lesson13_SpecKit_Superpowers_Cooperation/nanoclaw-v2-backend/.claude/**
 
 # Python
 __pycache__/

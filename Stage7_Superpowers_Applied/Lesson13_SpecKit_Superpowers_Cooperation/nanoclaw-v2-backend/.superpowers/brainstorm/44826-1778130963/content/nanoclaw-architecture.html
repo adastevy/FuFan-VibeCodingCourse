@@ -1,0 +1,72 @@
+<!-- filename: nanoclaw-architecture.html -->
+<style>
+  .arch-wrap { max-width: 1100px; margin: 0 auto; padding: 24px 16px; }
+  .arch-wrap h1 { font-size: 24px; margin-bottom: 4px; }
+  .arch-wrap .subtitle { color: #888; margin-bottom: 24px; font-size: 14px; }
+  .arch-wrap .meta { display: flex; gap: 24px; flex-wrap: wrap; font-size: 13px; color: #aaa; margin-bottom: 16px; }
+  .arch-wrap .meta b { color: #ddd; }
+  .mermaid-box { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 16px; overflow-x: auto; }
+  .arch-wrap .invariants { margin-top: 24px; padding: 16px; background: rgba(255,165,0,0.06); border-left: 3px solid orange; border-radius: 4px; }
+  .arch-wrap .invariants h3 { margin: 0 0 8px 0; font-size: 14px; color: orange; }
+  .arch-wrap .invariants ul { margin: 0; padding-left: 20px; font-size: 13px; line-height: 1.7; }
+</style>
+
+<div class="arch-wrap">
+  <h1>NanoClaw v2 — 端到端消息流</h1>
+  <p class="subtitle">从外部用户输入到 agent 响应回推的完整链路 · 课程入门段 Step 7B 探索成果</p>
+
+  <div class="meta">
+    <span><b>项目</b>：NanoClaw v2.0.33</span>
+    <span><b>源码量</b>：227 个 TS 文件（src/ 105）</span>
+    <span><b>哲学</b>：small enough to understand</span>
+    <span><b>当前部署</b>：DeepSeek-V4 via Anthropic 兼容层</span>
+  </div>
+
+  <div class="mermaid-box">
+    <pre class="mermaid">
+sequenceDiagram
+    autonumber
+    participant U as 外部用户<br/>(CLI / Discord / iMessage / ...)
+    participant CH as src/channels<br/>ChannelAdapter
+    participant R as src/router.ts
+    participant SM as src/session-manager.ts
+    participant DBin as inbound.db<br/>(host writes)
+    participant CR as src/container-runner.ts
+    participant C as Docker 容器<br/>(Bun + Claude Agent SDK)
+    participant API as Anthropic API<br/>(or DeepSeek 兼容层)
+    participant DBout as outbound.db<br/>(container writes)
+    participant D as src/delivery.ts
+
+    U->>CH: 平台事件
+    CH->>R: onInbound()
+    R->>R: resolve group → sender → agent → access gate
+    R->>SM: resolve/create session
+    SM->>DBin: INSERT messages_in（journal=DELETE，写完 close）
+    SM->>CR: 唤醒容器
+    CR->>C: docker run / 复用现有
+    C->>DBin: SELECT 新消息（read-only mount）
+    C->>API: Claude Agent SDK 调用
+    API-->>C: 响应
+    C->>DBout: INSERT messages_out
+    Note over D,DBout: 出站轮询独立循环
+    D->>DBout: 轮询未投递
+    D->>DBin: 写 delivered 表
+    D->>CH: onOutbound()
+    CH->>U: 推送回平台
+    </pre>
+  </div>
+
+  <div class="invariants">
+    <h3>⚠️ 三个跨容器 SQLite 不变量（绝不能改）</h3>
+    <ul>
+      <li><b>journal_mode = DELETE</b> — WAL 的 mmapped -shm 不会跨挂载刷新到 guest，会丢消息</li>
+      <li><b>host 写完必须 close</b> — 长连接会冻结 container 的 page cache，让它"看不到新消息"</li>
+      <li><b>一份 DB 单一写者</b> — DELETE 模式 journal-unlink 跨挂载非原子，多写会损坏</li>
+    </ul>
+  </div>
+</div>
+
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({ startOnLoad: true, theme: 'dark' });
+</script>

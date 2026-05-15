@@ -22,7 +22,7 @@ The first session of the Spec-Kit ↔ Superpowers cooperative series. Build a Kn
 ## Course Materials
 
 - [11_SuperPowers-Spec-kit.pdf](./CourseWare/11_SuperPowers-Spec-kit.pdf)
-- [11_SuperPowers+Spec-kit协同开发.excalidraw](./CourseWare/11_SuperPowers+Spec-kit协同开发.excalidraw)
+- [11_SuperPower+Spec-Kit协同开发实战.excalidraw](./CourseWare/11_SuperPower+Spec-Kit协同开发实战.excalidraw)
 
 ## Project Assets
 

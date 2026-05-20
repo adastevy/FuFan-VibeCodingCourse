@@ -19,6 +19,14 @@ The first session of the AlphaProject comprehensive practice — Intelligent Inv
 
 - [12_AlphaProject 综合项目实战（是上）.excalidraw](./CourseWare/12_AlphaProject%20综合项目实战（是上）.excalidraw)
 
+## Course Assets
+
+Skills, MCP server, and editor configs that power the research-to-PRD workflow used in this lesson — see [`Assets/README.md`](./Assets/README.md) for the full index.
+
+- **Skills**: `prd-writer`, `product-research-kickoff`, `speckit-design-injection`, `adversarial-architecture-selection`
+- **MCP**: `muyu-search-mcp` (multi-provider web search)
+- **Configs**: `claude-hud-config.json`
+
 ## Project Assets
 
 *(To be added after live sessions — full-stack Intelligent Investment Research platform)*

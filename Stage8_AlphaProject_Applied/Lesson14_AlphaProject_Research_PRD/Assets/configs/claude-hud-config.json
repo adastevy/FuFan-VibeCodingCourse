@@ -1,0 +1,11 @@
+{
+  "display": {
+    "contextValue": "both",
+    "showCost": true,
+    "showDuration": true,
+    "showSessionTokens": true,
+    "showTodos": true,
+    "showAgents": true,
+    "showTools": true
+  }
+}
